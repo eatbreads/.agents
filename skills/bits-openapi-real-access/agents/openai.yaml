@@ -1,0 +1,4 @@
+interface:
+  display_name: "Bits Real Access"
+  short_description: "Use real Bits JWT auth and headers"
+  default_prompt: "Use $bits-openapi-real-access to obtain a real Bits JWT, validate headers, and unblock real OpenAPI access."

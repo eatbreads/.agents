@@ -1,0 +1,4 @@
+interface:
+  display_name: "PPT Storytelling Style"
+  short_description: "Pain-first Chinese PPT style with bigger key statements, varied layouts, compressed Prompt sections, and team-method endings."
+  default_prompt: "Use this skill to create or revise a Chinese PPT in my latest preferred style: pain-first opening, progressive questioning, explicit paradigm shifts, larger judgment statements, less dead whitespace, varied page rhythms, compressed Prompt sections, concrete templates, and endings that turn personal practice into team capability."

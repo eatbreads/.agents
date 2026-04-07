@@ -1,0 +1,4 @@
+interface:
+  display_name: "自我总结复盘"
+  short_description: "任务成功后提炼可复用经验与知识卡"
+  default_prompt: "Use $self-reflection-knowledge-extraction to turn this successful task into a reusable experience card."

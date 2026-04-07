@@ -1,0 +1,4 @@
+interface:
+  display_name: "用好高级能力"
+  short_description: "进入对话时优先检查并正确使用可用 skill 的通用引导。"
+  default_prompt: "使用这个 skill，先检查当前任务可能需要哪些 skill，并优先按正确方式调用它们。"

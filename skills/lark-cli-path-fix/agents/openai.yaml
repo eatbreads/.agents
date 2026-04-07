@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark CLI Path Fix"
+  short_description: "Fix hidden Lark CLI installs in shell sessions."
+  default_prompt: "Use this skill when lark-cli or node cannot be found in the current shell even though they were previously installed. Diagnose PATH drift, compare bash and zsh, and recover a working invocation with minimal changes."

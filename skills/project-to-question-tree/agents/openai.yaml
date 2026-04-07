@@ -1,0 +1,4 @@
+interface:
+  display_name: "项目转问题树"
+  short_description: "把项目拆成层层追问的面试问题链，用来做更严格的技术压力测试"
+  default_prompt: "使用 $project-to-question-tree，从我的项目生成可连续追问的面试问题链。"

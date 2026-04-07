@@ -1,0 +1,4 @@
+interface:
+  display_name: "子 Agent 协同开发"
+  short_description: "把独立实现任务拆给多个子 agent，并在每步后做规格和质量复审。"
+  default_prompt: "使用这个 skill，把当前实现计划拆给多个子 agent 执行，并按规格审查和代码质量审查推进。"

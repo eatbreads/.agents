@@ -1,0 +1,4 @@
+interface:
+  display_name: "系统解释器"
+  short_description: "把复杂工程系统拆成可理解的执行流、术语解释和生活类比"
+  default_prompt: "使用 $system-explainer 帮我把这个系统问题讲清楚，按执行流、类比和术语解释展开。"

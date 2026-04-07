@@ -1,0 +1,4 @@
+interface:
+  display_name: "Browser Use Operator"
+  short_description: "Run browser-use reliably for real web tasks."
+  default_prompt: "Use this skill when a task should be executed through browser-use on this machine. Prefer the local browser-use CLI workflow, maintain sessions, inspect page state, and handle headed browsing, login handoff, uploads, and common pitfalls."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "PPT Maker"
+  short_description: "Build editable PowerPoint decks from notes."
+  default_prompt: "Use this skill to turn my topic or notes into a structured, editable PPT deck."

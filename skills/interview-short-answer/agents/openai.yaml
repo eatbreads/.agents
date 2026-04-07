@@ -1,0 +1,4 @@
+interface:
+  display_name: "八股短问快答器"
+  short_description: "专门回答短技术问题，给出好懂、能复述的面试短答案"
+  default_prompt: "使用 $interview-short-answer 回答这个短技术问题，要求通俗、简洁，并给出面试可直接复述的版本。"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code2SystemDoc"
+  short_description: "Source-to-system docs with UML and interview framing"
+  default_prompt: "Analyze the provided code and produce a structured system document with sequence UML, module responsibilities, key mechanisms, and interview-ready explanation."

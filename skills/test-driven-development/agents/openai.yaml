@@ -1,0 +1,4 @@
+interface:
+  display_name: "测试驱动开发"
+  short_description: "先写失败测试，再写最小实现，用 TDD 方式完成功能或修复。"
+  default_prompt: "使用这个 skill，严格按先写失败测试、再写最小实现、最后重构的 TDD 方式完成任务。"

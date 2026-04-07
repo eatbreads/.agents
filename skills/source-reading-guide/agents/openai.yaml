@@ -1,0 +1,4 @@
+interface:
+  display_name: "源码阅读导航专家"
+  short_description: "把源码分析整理成可跟读、可落到 IDE 的执行流导航结果"
+  default_prompt: "使用 $source-reading-guide 分析这段源码，输出可跟着读进去的源码阅读导航图。"

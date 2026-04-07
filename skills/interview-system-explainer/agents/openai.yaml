@@ -1,0 +1,4 @@
+interface:
+  display_name: "系统八股解释器"
+  short_description: "把系统八股问题讲清楚，补流程、类比、取舍和面试表达"
+  default_prompt: "使用 $interview-system-explainer 把这个系统问题解释得通俗、可复述，并给出面试回答版。"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "XHS Note Capture"
+  short_description: "Capture Xiaohongshu posts into markdown"
+  default_prompt: "Use $xhs-web-note-capture to extract one or more Xiaohongshu posts into local markdown files."

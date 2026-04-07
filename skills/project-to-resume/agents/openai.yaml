@@ -1,0 +1,4 @@
+interface:
+  display_name: "项目转简历"
+  short_description: "把项目内容整理成简历要点，并生成适合面试讲述的项目介绍"
+  default_prompt: "使用 $project-to-resume，把我的项目整理成简历要点和面试讲解版本。"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "请求代码审查"
+  short_description: "在任务完成、功能实现后或合并前发起 AI 代码审查，提前发现问题。"
+  default_prompt: "使用这个 skill，在当前任务完成后发起一次代码审查，检查实现是否满足要求并找出潜在问题。"

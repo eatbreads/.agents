@@ -1,0 +1,5 @@
+interface:
+  display_name: "文档转工程方案"
+  short_description: "把多篇文档提炼成问题、需求和 AI 落地方案"
+  default_prompt: "Use $doc-to-ai-solution to read a set of documents and turn them into problem analysis, actionable requirements, and an AI implementation plan."
+
