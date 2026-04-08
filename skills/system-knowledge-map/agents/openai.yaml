@@ -1,4 +1,4 @@
 interface:
   display_name: "系统知识地图专家"
-  short_description: "把 AI 技术报告拆成领域、问题树与学习路径的知识地图"
-  default_prompt: "使用 $system-knowledge-map 分析这份 AI 技术报告，输出核心领域、扫盲问题树、关键理解路径和最小知识闭环。"
+  short_description: "把技术报告拆成系统边界、问题树与学习路径"
+  default_prompt: "使用 $system-knowledge-map 分析这份技术报告，面向有工程基础但不熟系统背景的读者，输出核心领域、分层问题树、关键理解路径和最小知识闭环。"
