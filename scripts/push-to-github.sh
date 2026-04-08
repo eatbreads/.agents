@@ -33,6 +33,9 @@ else
   echo "没有新的工作区改动，跳过提交。"
 fi
 
+echo "同步远端 ${REMOTE_NAME}/${BRANCH_NAME} ..."
+git pull --rebase "${REMOTE_NAME}" "${BRANCH_NAME}"
+
 echo "推送到 ${REMOTE_NAME}/${BRANCH_NAME} ..."
 git push "${REMOTE_NAME}" "HEAD:${BRANCH_NAME}"
 
