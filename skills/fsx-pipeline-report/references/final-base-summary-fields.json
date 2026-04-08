@@ -1,0 +1,12 @@
+[
+  { "name": "流水线标题", "type": "text" },
+  { "name": "流水线 ID", "type": "text" },
+  { "name": "日期", "type": "text" },
+  { "name": "最近运行 ID", "type": "text" },
+  { "name": "运行状态", "type": "text" },
+  { "name": "失败步骤数", "type": "number" },
+  { "name": "阻塞步骤数", "type": "number" },
+  { "name": "首个失败步骤", "type": "text" },
+  { "name": "流水线链接", "type": "text" },
+  { "name": "是否需要关注", "type": "text" }
+]

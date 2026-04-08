@@ -29,6 +29,7 @@ Do not automatically include:
 - unrelated upstream or downstream pipelines
 
 Read [references/fsx-report-reference.md](references/fsx-report-reference.md) for the current watched pipeline list, recommended report fields, and the group-chat target used in this workspace.
+Read [references/required-reads.md](references/required-reads.md) for the exact files that were truly useful in this workflow.
 
 ### 2. Load the local secret correctly
 
@@ -56,6 +57,8 @@ Always:
 Treat `401` as auth/header trouble.
 Treat `403` as permission trouble.
 
+If auth works but the run payload shape looks different from memory, read [references/pitfalls.md](references/pitfalls.md) before guessing field paths.
+
 ### 4. Pull only the data needed for reporting
 
 For each watched pipeline:
@@ -75,12 +78,27 @@ Use two outputs with the same information architecture:
 - `汇总信息`
 - `失败步骤明细`
 
+Do not keep an extra default table such as `数据表` in the final Base.
+
 Recommended local artifacts:
 
 - raw Bits response JSON
 - summary JSON
 - detail JSON
 - Markdown report
+
+If you need deterministic data generation, run:
+
+```bash
+python3 scripts/fetch_fsx_pipeline_report.py --repo-root /path/to/workspace
+```
+
+This script writes:
+
+- `fsx_pipeline_runs_raw.json`
+- `fsx_pipeline_report_summary.json`
+- `fsx_pipeline_report_details.json`
+- `fsx_pipeline_report.md`
 
 ### 6. Write to Feishu Base
 
@@ -100,6 +118,20 @@ Before writing records:
 
 If the Base already exists, update it instead of creating duplicate tables unless the user asked for a fresh one.
 
+If you want a repeatable Feishu sync path, run:
+
+```bash
+python3 scripts/sync_fsx_lark_base.py --base-token <base_token> --artifact-dir /path/to/artifacts
+```
+
+This script:
+
+- ensures `汇总信息` and `失败步骤明细` exist
+- creates missing fields with retry
+- deletes default `数据表`
+- clears old rows
+- writes one clean summary pass and one clean detail pass
+
 ### 7. Send the group summary
 
 Send a concise summary message to the target group after the Base is ready.
@@ -118,6 +150,8 @@ The message should include:
 - total failed/blocked detail count
 - a short note that this round does not analyze root cause
 
+Do not add filler text such as “Markdown 版本已同步生成，便于后续沉淀或转文档”.
+
 ### 8. Close out clearly
 
 In the final response, include:
@@ -134,3 +168,12 @@ In the final response, include:
 - Do not present mock data as if it came from real Bits.
 - Do not claim root-cause conclusions from step names alone.
 - Do not forget that `.agents/secret` is the default local secret location in this workspace.
+- Do not leave `数据表` in the final Base delivered to the user.
+
+## References
+
+- Read [references/fsx-report-reference.md](references/fsx-report-reference.md) for watched pipelines, target chat, and the current field set.
+- Read [references/required-reads.md](references/required-reads.md) for the exact high-signal files.
+- Read [references/pitfalls.md](references/pitfalls.md) for the real issues hit in this task.
+- Read [references/final-base-summary-fields.json](references/final-base-summary-fields.json) and [references/final-base-detail-fields.json](references/final-base-detail-fields.json) when rebuilding the Base schema.
+- Read [references/example-report.md](references/example-report.md) when you need the expected markdown shape.

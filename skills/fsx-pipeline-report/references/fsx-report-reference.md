@@ -9,8 +9,8 @@ Only include the pipelines that FSX duty staff need to watch in this report.
 | `1073215225602` | FSX for vePFS/TOS 北京全量流水线 |
 | `656544971778` | FSX for NAS/EFS 廊坊全量流水线 |
 | `410812259074` | FSProxy for vePFS 全量流水线 |
-| `424594542850` | vePFS 产品全量流水线 |
 | `1119183026434` | VePFS 接入点 mgr 故障流水线 |
+| `865297825538` | FSProxy for EFS&NAS 全量流水线 |
 
 Do not include these by default:
 
@@ -40,7 +40,6 @@ Recommended fields:
 
 Recommended fields:
 
-- 明细编号
 - 日期
 - 流水线标题
 - 流水线 ID
@@ -56,6 +55,7 @@ Recommended fields:
 - Bits service-account secret local file: `.agents/secret`
 - Raw output directory: `artifacts/`
 - Markdown report path: `artifacts/fsx_pipeline_report.md`
+- Final Base should contain only `汇总信息` and `失败步骤明细`
 
 ## Group message target used in this workspace
 
