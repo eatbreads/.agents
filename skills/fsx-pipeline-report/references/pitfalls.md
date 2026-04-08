@@ -109,3 +109,43 @@ Fallback path:
 1. try `--as user`
 2. if scope is missing, send with `--as bot`
 3. mention that fallback explicitly in the final response
+
+## CLI / Integration pitfalls
+
+### 10. `lark-cli` 未安装或 PATH 找不到
+
+- 症状：`lark-cli: command not found`。
+- 成因：云/容器环境未预装 CLI，或 PATH 未包含用户安装目录。
+- 修复：使用用户前缀安装并调用显式路径。
+  - 安装：`npm install --prefix "$HOME/.local" -g @larksuite/cli`
+  - 调用：`$HOME/.local/bin/lark-cli ...` 或将 `~/.local/bin` 加入 PATH。
+
+### 11. 全局安装权限不足（EACCES）
+
+- 症状：`npm install -g` 报 `EACCES: permission denied`。
+- 修复：改用用户目录安装：`npm install --prefix "$HOME/.local" -g @larksuite/cli`。
+
+### 12. 首次使用需初始化与登录
+
+- 症状：`lark-cli auth status` 显示 `not configured` 或无 user 身份。
+- 修复：
+  - 初始化配置：`lark-cli config init --new`（根据输出链接完成设备授权）。
+  - 获取用户身份：`lark-cli auth login --recommend`，完成浏览器授权后再执行后续操作。
+
+### 13. Base 用 bot 创建后用户无法访问
+
+- 症状：用户打开 Base 链接提示无权限。
+- 原因：Base 由 `bot` 创建，未为个人用户授予访问。
+- 处理：
+  - 首选使用 `user` 身份为目标用户授予权限/加入成员；
+  - 或保留 `bot` 身份，拿到用户 `open_id` 后进行增权。
+
+### 14. 同步脚本需支持 `--as bot`
+
+- 症状：同步时报 `need_user_authorization`，而 `bot` 对该 Base 有权限。
+- 处理：为 `scripts/sync_fsx_lark_base.py` 增加 `--as [user|bot]`，在用户未授权时使用 `--as bot` 完成表结构与数据写入。
+
+### 15. 以 bot 发群消息需先将应用加入群
+
+- 症状：`im +messages-send --as bot` 失败提示未在群内或权限不足。
+- 处理：确认应用已在目标群；若缺少用户发送 scope，按“先 user，失败再 bot”顺序回退。

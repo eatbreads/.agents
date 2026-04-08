@@ -87,10 +87,14 @@ Recommended local artifacts:
 - detail JSON
 - Markdown report
 
+Do not write artifacts into this git workspace. Use `/tmp/fsx-pipeline-report` as the default output directory.
+
 If you need deterministic data generation, run:
 
 ```bash
-python3 scripts/fetch_fsx_pipeline_report.py --repo-root /path/to/workspace
+python3 scripts/fetch_fsx_pipeline_report.py \
+  --repo-root /path/to/workspace \
+  --output-dir /tmp/fsx-pipeline-report
 ```
 
 This script writes:
@@ -121,7 +125,9 @@ If the Base already exists, update it instead of creating duplicate tables unles
 If you want a repeatable Feishu sync path, run:
 
 ```bash
-python3 scripts/sync_fsx_lark_base.py --base-token <base_token> --artifact-dir /path/to/artifacts
+python3 scripts/sync_fsx_lark_base.py \
+  --base-token <base_token> \
+  --artifact-dir /tmp/fsx-pipeline-report
 ```
 
 This script:
@@ -169,6 +175,7 @@ In the final response, include:
 - Do not claim root-cause conclusions from step names alone.
 - Do not forget that `.agents/secret` is the default local secret location in this workspace.
 - Do not leave `数据表` in the final Base delivered to the user.
+- Do not store any generated artifacts under this git workspace; prefer `/tmp/fsx-pipeline-report`.
 
 ## References
 

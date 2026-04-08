@@ -119,8 +119,8 @@ def main() -> None:
     )
     parser.add_argument(
         "--output-dir",
-        default="artifacts",
-        help="Directory to store raw JSON, summary JSON, detail JSON, and markdown.",
+        default="/tmp/fsx-pipeline-report",
+        help="Directory to store raw JSON, summary JSON, detail JSON, and markdown. Default: /tmp/fsx-pipeline-report",
     )
     parser.add_argument(
         "--username",

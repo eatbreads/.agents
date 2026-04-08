@@ -53,8 +53,8 @@ Recommended fields:
 ## Default local conventions
 
 - Bits service-account secret local file: `.agents/secret`
-- Raw output directory: `artifacts/`
-- Markdown report path: `artifacts/fsx_pipeline_report.md`
+- Raw output directory: `/tmp/fsx-pipeline-report/`
+- Markdown report path: `/tmp/fsx-pipeline-report/fsx_pipeline_report.md`
 - Final Base should contain only `汇总信息` and `失败步骤明细`
 
 ## Group message target used in this workspace
