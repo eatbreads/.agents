@@ -1,0 +1,4 @@
+interface:
+  display_name: "FSX 流水线报表"
+  short_description: "抓取 Bits 需看护流水线并同步飞书多维表格与群摘要"
+  default_prompt: "使用 $fsx-pipeline-report 抓取需看护的 FSX 流水线运行数据，生成飞书多维表格、Markdown 报表和群摘要。"
