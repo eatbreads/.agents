@@ -1,4 +1,4 @@
 interface:
-  display_name: "系统知识地图专家"
-  short_description: "把技术报告拆成系统边界、问题树与学习路径"
-  default_prompt: "使用 $system-knowledge-map 分析这份技术报告，面向有工程基础但不熟系统背景的读者，输出核心领域、分层问题树、关键理解路径和最小知识闭环。"
+  display_name: "系统问题清单专家"
+  short_description: "把技术材料压成按模块整理的纯问题清单"
+  default_prompt: "使用 $system-knowledge-map 读取这份技术材料，面向有工程基础但不熟当前背景的读者，输出高密度、按模块整理、无答案的面试式问题清单，不要写步骤、摘要、学习路径或最小知识闭环。"

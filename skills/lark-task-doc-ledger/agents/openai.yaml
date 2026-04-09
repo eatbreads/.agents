@@ -1,0 +1,4 @@
+interface:
+  display_name: "飞书任务台账助手"
+  short_description: "读取并回写飞书云文档中的简单任务清单"
+  default_prompt: "使用 $lark-task-doc-ledger 读取指定飞书云文档任务清单，按简单编号格式补齐负责人、来源、优先级、任务描述、备注和相关文档，并按需新增任务。"
