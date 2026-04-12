@@ -1,0 +1,4 @@
+interface:
+  display_name: "FSX 飞书播报"
+  short_description: "抓取固定五条 FSX 流水线，生成飞书表格并发送群日报"
+  default_prompt: "使用 $fsx-pipeline-report-feishu 抓取固定五条 FSX 流水线的最新已结束 run，生成三份总 CSV，写入当天飞书电子表格，并将 AI 简报发送到飞书群。"

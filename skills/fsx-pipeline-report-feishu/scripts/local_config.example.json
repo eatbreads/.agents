@@ -1,0 +1,17 @@
+{
+  "bits_sa_secret": "replace-with-service-account-secret",
+  "username": "replace-with-feishu-username",
+  "domain": "pipelines_open;v1",
+  "single_pipeline_id": "1073215225602",
+  "fixed_pipeline_ids": [
+    "1073215225602",
+    "656544971778",
+    "410812259074",
+    "1119183026434",
+    "865297825538"
+  ],
+  "chat_id": "oc_fb9b3bb366d930e54f0471362c3b9e8e",
+  "spreadsheet_title_prefix": "FSX 核心流水线每日看护",
+  "sheets_identity": "user",
+  "im_identity": "bot"
+}
