@@ -11,6 +11,9 @@
     "865297825538"
   ],
   "chat_id": "oc_fb9b3bb366d930e54f0471362c3b9e8e",
+  "viewer_department_ids": [
+    "replace-with-open-department-id"
+  ],
   "spreadsheet_title_prefix": "FSX 核心流水线每日看护",
   "sheets_identity": "user",
   "im_identity": "bot"

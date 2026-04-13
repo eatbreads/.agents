@@ -24,6 +24,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "spreadsheet_title_prefix": "FSX 核心流水线每日看护",
     "sheets_identity": "user",
     "im_identity": "bot",
+    "viewer_department_ids": [],
 }
 
 
@@ -51,3 +52,10 @@ def get_fixed_pipeline_ids(config: Dict[str, Any]) -> List[str]:
     if isinstance(value, list):
         return [str(item) for item in value if str(item).strip()]
     return list(DEFAULT_CONFIG["fixed_pipeline_ids"])
+
+
+def get_viewer_department_ids(config: Dict[str, Any]) -> List[str]:
+    value = config.get("viewer_department_ids")
+    if isinstance(value, list):
+        return [str(item) for item in value if str(item).strip()]
+    return []

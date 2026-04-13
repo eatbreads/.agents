@@ -18,7 +18,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import watch_fixed_pipelines
-from config_loader import load_local_config
+from config_loader import get_viewer_department_ids, load_local_config
 
 
 CONFIG = load_local_config()
@@ -30,6 +30,7 @@ JOBS_FILENAME = "jobs_all.csv"
 TOP10_FILENAME = "top10_jobs_all.csv"
 SHEETS_IDENTITY = str(CONFIG["sheets_identity"])
 IM_IDENTITY = str(CONFIG["im_identity"])
+VIEWER_DEPARTMENT_IDS = get_viewer_department_ids(CONFIG)
 ENABLE_COCO = False
 
 
@@ -197,6 +198,43 @@ def write_combined_sheet(spreadsheet_token: str, sheet_id: str, values: List[Lis
     )
 
 
+def grant_department_view_permissions(spreadsheet_token: str, department_ids: Sequence[str]) -> List[Dict[str, Any]]:
+    results: List[Dict[str, Any]] = []
+    for department_id in department_ids:
+        payload = _run_command(
+            [
+                "lark-cli",
+                "drive",
+                "permission.members",
+                "create",
+                "--as",
+                SHEETS_IDENTITY,
+                "--params",
+                json.dumps(
+                    {
+                        "token": spreadsheet_token,
+                        "type": "sheet",
+                        "need_notification": False,
+                    },
+                    ensure_ascii=False,
+                ),
+                "--data",
+                json.dumps(
+                    {
+                        "type": "department",
+                        "member_type": "opendepartmentid",
+                        "member_id": department_id,
+                        "perm": "view",
+                    },
+                    ensure_ascii=False,
+                ),
+            ],
+            parse_json=True,
+        )
+        results.append(payload)
+    return results
+
+
 def cleanup_local_outputs(output_dir: Path) -> List[str]:
     removed: List[str] = []
     for filename in [OVERVIEW_FILENAME, TOP10_FILENAME, JOBS_FILENAME]:
@@ -221,7 +259,11 @@ def _parse_float(value: str) -> float:
         return 0.0
 
 
-def build_rule_fallback_report(overview_rows: List[Dict[str, str]]) -> str:
+def build_rule_fallback_report(
+    overview_rows: List[Dict[str, str]],
+    now: Optional[datetime] = None,
+) -> str:
+    date_prefix = _today_prefix(now)
     total_case_num = sum(_parse_int(row.get("总用例数", "0")) for row in overview_rows)
     total_failed = sum(_parse_int(row.get("总失败", "0")) for row in overview_rows)
     total_skipped = sum(_parse_int(row.get("总跳过", "0")) for row in overview_rows)
@@ -229,9 +271,9 @@ def build_rule_fallback_report(overview_rows: List[Dict[str, str]]) -> str:
     total_pass_rate = (total_succeed / total_case_num * 100) if total_case_num else 0.0
 
     lines = [
-        "FSX 核心流水线每日看护报告",
+        f"FSX 核心流水线每日看护报告（{date_prefix}）",
         "",
-        "标题：FSX 客户端与代理流水线运行日报",
+        f"标题：{date_prefix} FSX 客户端与代理流水线运行日报",
         "",
         "总体概览：",
         (
@@ -344,6 +386,7 @@ def main() -> None:
     args = parser.parse_args()
 
     output_dir = Path(args.output_dir).resolve()
+    now = datetime.now()
     if not args.skip_watch:
         run_watch_pipeline(output_dir)
 
@@ -352,8 +395,14 @@ def main() -> None:
             raise PublishError(f"Missing required CSV file: {output_dir / filename}")
 
     spreadsheet_ref = create_spreadsheet()
+    permission_results: List[Dict[str, Any]] = []
+    if VIEWER_DEPARTMENT_IDS:
+        permission_results = grant_department_view_permissions(
+            spreadsheet_ref.token,
+            VIEWER_DEPARTMENT_IDS,
+        )
     sheet_id = get_default_sheet_id(spreadsheet_ref.token)
-    combined_values = build_combined_sheet_values(output_dir)
+    combined_values = build_combined_sheet_values(output_dir, now)
     write_result = write_combined_sheet(spreadsheet_ref.token, sheet_id, combined_values)
 
     if ENABLE_COCO:
@@ -362,10 +411,12 @@ def main() -> None:
         except Exception:
             report_text = build_rule_fallback_report(
                 read_csv_rows(output_dir / OVERVIEW_FILENAME),
+                now,
             )
     else:
         report_text = build_rule_fallback_report(
             read_csv_rows(output_dir / OVERVIEW_FILENAME),
+            now,
         )
 
     message = compose_final_message(report_text, spreadsheet_ref)
@@ -378,6 +429,7 @@ def main() -> None:
                 "spreadsheet_token": spreadsheet_ref.token,
                 "spreadsheet_url": spreadsheet_ref.url,
                 "sheet_id": sheet_id,
+                "permission_results": permission_results,
                 "write_result": write_result.get("data", {}),
                 "removed_files": removed_files,
                 "message_id": send_result.get("message_id"),

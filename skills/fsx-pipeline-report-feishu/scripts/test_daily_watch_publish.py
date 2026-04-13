@@ -52,10 +52,13 @@ class DailyWatchPublishHelpersTest(unittest.TestCase):
             },
         ]
 
-        text = daily_watch_publish.build_rule_fallback_report(overview_rows)
+        text = daily_watch_publish.build_rule_fallback_report(
+            overview_rows,
+            datetime(2026, 4, 13, 9, 0),
+        )
 
-        self.assertIn("FSX 核心流水线每日看护报告", text)
-        self.assertIn("标题：FSX 客户端与代理流水线运行日报", text)
+        self.assertIn("FSX 核心流水线每日看护报告（2026-04-13）", text)
+        self.assertIn("标题：2026-04-13 FSX 客户端与代理流水线运行日报", text)
         self.assertIn("4,566 条用例", text)
         self.assertIn("各流水线运行情况汇总：", text)
         self.assertNotIn("随机故障注入-kill", text)
@@ -117,6 +120,24 @@ class DailyWatchPublishHelpersTest(unittest.TestCase):
             )
             for filename in removed:
                 self.assertFalse((base / filename).exists())
+
+    def test_grant_department_view_permissions_calls_drive_api(self):
+        with mock.patch.object(
+            daily_watch_publish,
+            "_run_command",
+            return_value={"member": {"member_id": "od-1"}},
+        ) as run_command:
+            result = daily_watch_publish.grant_department_view_permissions(
+                "sht_token",
+                ["od-1", "od-2"],
+            )
+
+        self.assertEqual(len(result), 2)
+        first_args = run_command.call_args_list[0].args[0]
+        self.assertEqual(first_args[:5], ["lark-cli", "drive", "permission.members", "create", "--as"])
+        self.assertIn("sht_token", first_args[first_args.index("--params") + 1])
+        self.assertIn("opendepartmentid", first_args[first_args.index("--data") + 1])
+        self.assertIn("department", first_args[first_args.index("--data") + 1])
 
 
 if __name__ == "__main__":
