@@ -30,6 +30,7 @@ JOBS_FILENAME = "jobs_all.csv"
 TOP10_FILENAME = "top10_jobs_all.csv"
 SHEETS_IDENTITY = str(CONFIG["sheets_identity"])
 IM_IDENTITY = str(CONFIG["im_identity"])
+ENABLE_COCO = False
 
 
 class PublishError(RuntimeError):
@@ -220,7 +221,7 @@ def _parse_float(value: str) -> float:
         return 0.0
 
 
-def build_rule_fallback_report(overview_rows: List[Dict[str, str]], top10_rows: List[Dict[str, str]]) -> str:
+def build_rule_fallback_report(overview_rows: List[Dict[str, str]]) -> str:
     total_case_num = sum(_parse_int(row.get("总用例数", "0")) for row in overview_rows)
     total_failed = sum(_parse_int(row.get("总失败", "0")) for row in overview_rows)
     total_skipped = sum(_parse_int(row.get("总跳过", "0")) for row in overview_rows)
@@ -230,56 +231,39 @@ def build_rule_fallback_report(overview_rows: List[Dict[str, str]], top10_rows: 
     lines = [
         "FSX 核心流水线每日看护报告",
         "",
-        "FSX 核心流水线看护概览",
-        "本次报告由规则模板回退生成。",
-        "大家好，这是本次 FSX 固定五条核心流水线的自动化看护结果。",
+        "标题：FSX 客户端与代理流水线运行日报",
+        "",
+        "总体概览：",
         (
-            f"本次看护覆盖的五条流水线总计执行了 {total_case_num:,} 个测试用例，"
-            f"其中 {total_failed} 个失败，{total_skipped} 个跳过，整体通过率为 {total_pass_rate:.2f}%。"
+            f"- 本次统计共 {len(overview_rows)} 条流水线参与运行，其中 "
+            f"{sum(1 for row in overview_rows if _parse_int(row.get('总失败', '0')) == 0)} 条流水线全部通过，"
+            f"{sum(1 for row in overview_rows if _parse_int(row.get('总失败', '0')) > 0)} 条流水线存在失败。"
+        ),
+        (
+            f"- 五条流水线总计执行 {total_case_num:,} 条用例，失败 {total_failed}、成功 {total_succeed}、"
+            f"跳过 {total_skipped}，整体通过率 {total_pass_rate:.2f}%。"
         ),
         "",
-        "---",
-        "各流水线运行情况汇总",
+        "各流水线运行情况汇总：",
     ]
 
     for row in overview_rows:
         pipeline_name = row.get("pipeline_name", "")
-        pipeline_id = row.get("pipeline_id", "")
         failed = _parse_int(row.get("总失败", "0"))
-        status = "存在失败" if failed > 0 else "全部通过"
+        skipped = _parse_int(row.get("总跳过", "0"))
+        if failed > 0:
+            status = "整体稳定，存在少量失败需跟进。"
+        elif skipped > 0:
+            status = "本次运行无失败，存在跳过用例。"
+        else:
+            status = "本次运行全部通过。"
         lines.append(
             (
-                f"- {pipeline_name} ({pipeline_id})：总用例 {row.get('总用例数', '0')}，"
-                f"失败 {row.get('总失败', '0')}，通过率 {row.get('总通过率', '0')}%，状态 {status}"
+                f"- `{pipeline_name}`：共 {row.get('总用例数', '0')} 条用例，"
+                f"失败 {row.get('总失败', '0')}、成功 {row.get('总成功', '0')}、"
+                f"跳过 {row.get('总跳过', '0')}，通过率 {row.get('总通过率', '0')}%，{status}"
             )
         )
-
-    grouped: Dict[str, List[Dict[str, str]]] = {}
-    for row in top10_rows:
-        if _parse_int(row.get("failed_case", "0")) <= 0:
-            continue
-        grouped.setdefault(row.get("pipeline_name", ""), []).append(row)
-
-    if grouped:
-        lines.extend(["", "重点失败节点分析与建议"])
-        for pipeline_name, rows in grouped.items():
-            pipeline_id = rows[0].get("pipeline_id", "")
-            total_failed_pipeline = 0
-            for overview in overview_rows:
-                if overview.get("pipeline_name") == pipeline_name:
-                    total_failed_pipeline = _parse_int(overview.get("总失败", "0"))
-                    break
-            lines.append(f"{pipeline_name} ({pipeline_id}) 共暴露 {total_failed_pipeline} 个失败用例，重点关注以下节点：")
-            for idx, row in enumerate(rows[:3], start=1):
-                lines.append(
-                    (
-                        f"- Top {idx}: {row.get('jobName', '')}，失败 {row.get('failed_case', '0')} 个，"
-                        f"贡献占比 {row.get('该节点失败数/总失败数(%)', '0')}%，"
-                        f"节点失败率 {row.get('该节点失败数/该节点总用例数(%)', '0')}%。"
-                    )
-                )
-
-    lines.extend(["", "---", "以上是本次流水线看护的全部内容。"])
     return "\n".join(lines)
 
 
@@ -295,9 +279,20 @@ def run_coco_report(output_dir: Path) -> str:
         "请只基于我提供的 overview_all.csv 和 top10_jobs_all.csv 生成一份中文日报。"
         "不要编造 CSV 中不存在的数据，不要读取其他文件，不要做复杂推理。"
         "只输出最终报告正文，不要加解释，不要用 markdown 代码块包裹。"
-        "报告结构尽量参考：标题、总体概览、各流水线运行情况汇总、重点失败节点分析与建议、结尾。"
+        "输出必须尽量简短，只保留三段：标题、总体概览、各流水线运行情况汇总。"
+        "不要输出重点失败节点分析、原因分析、建议、结尾、额外说明。"
+        "总体概览最多 2 条 bullet。"
+        "各流水线运行情况汇总中，每条流水线只用 1 条 bullet，总结总用例、失败、成功、跳过、通过率和一句简短状态。"
         "语气简洁，适合直接发飞书群。"
-        "如果某条流水线没有失败，就写成全部通过，不要硬凑建议。"
+        "如果某条流水线没有失败，就写成全部通过；如果有失败，只写存在少量失败需跟进，不要展开 job 级分析。"
+        "格式尽量贴近下面这种风格："
+        "FSX 流水线运行日报\\n\\n"
+        "标题：FSX 客户端与代理流水线运行日报\\n\\n"
+        "总体概览：\\n"
+        "- 本次统计共 5 条流水线参与运行，其中 3 条流水线全部通过，2 条流水线存在少量用例失败。\\n"
+        "- 各流水线整体质量较高，功能与回归覆盖基本稳定。\\n\\n"
+        "各流水线运行情况汇总：\\n"
+        "- `流水线名`：共 X 条用例，失败 X、成功 X、跳过 X，通过率 XX.XX%，本次运行全部通过。"
         "\n\n【overview_all.csv】\n"
         f"{overview_csv}"
         "\n\n【top10_jobs_all.csv】\n"
@@ -361,12 +356,16 @@ def main() -> None:
     combined_values = build_combined_sheet_values(output_dir)
     write_result = write_combined_sheet(spreadsheet_ref.token, sheet_id, combined_values)
 
-    try:
-        report_text = run_coco_report(output_dir)
-    except Exception:
+    if ENABLE_COCO:
+        try:
+            report_text = run_coco_report(output_dir)
+        except Exception:
+            report_text = build_rule_fallback_report(
+                read_csv_rows(output_dir / OVERVIEW_FILENAME),
+            )
+    else:
         report_text = build_rule_fallback_report(
             read_csv_rows(output_dir / OVERVIEW_FILENAME),
-            read_csv_rows(output_dir / TOP10_FILENAME),
         )
 
     message = compose_final_message(report_text, spreadsheet_ref)

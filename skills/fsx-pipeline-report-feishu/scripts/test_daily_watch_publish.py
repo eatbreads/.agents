@@ -30,7 +30,7 @@ class DailyWatchPublishHelpersTest(unittest.TestCase):
 
         self.assertEqual(title, "FSX 核心流水线每日看护-2026-04-12")
 
-    def test_build_rule_fallback_report_contains_summary_and_top_jobs(self):
+    def test_build_rule_fallback_report_contains_compact_summary(self):
         overview_rows = [
             {
                 "pipeline_name": "北京全量",
@@ -51,23 +51,14 @@ class DailyWatchPublishHelpersTest(unittest.TestCase):
                 "pipeline_id": "656544971778",
             },
         ]
-        top10_rows = [
-            {
-                "pipeline_name": "北京全量",
-                "pipeline_id": "1073215225602",
-                "jobName": "随机故障注入-kill",
-                "failed_case": "12",
-                "该节点失败数/总失败数(%)": "34.29",
-                "该节点失败数/该节点总用例数(%)": "13.64",
-            }
-        ]
 
-        text = daily_watch_publish.build_rule_fallback_report(overview_rows, top10_rows)
+        text = daily_watch_publish.build_rule_fallback_report(overview_rows)
 
         self.assertIn("FSX 核心流水线每日看护报告", text)
-        self.assertIn("本次报告由规则模板回退生成", text)
-        self.assertIn("4,566 个测试用例", text)
-        self.assertIn("随机故障注入-kill", text)
+        self.assertIn("标题：FSX 客户端与代理流水线运行日报", text)
+        self.assertIn("4,566 条用例", text)
+        self.assertIn("各流水线运行情况汇总：", text)
+        self.assertNotIn("随机故障注入-kill", text)
 
     def test_compose_final_message_appends_spreadsheet_link(self):
         text = daily_watch_publish.compose_final_message(

@@ -1,6 +1,6 @@
 ---
-name: fsx-pipeline-report-feishu
-description: 面向 FSX 值班/看护场景的 Bits 流水线看护与飞书播报 Skill。用于抓取固定五条 FSX 流水线的最新已结束 run，生成 overview/top10/jobs 三份总 CSV，写入每日飞书电子表格，并将 AI 简报发送到飞书群。
+name: fsx-bits-pipeline-watch
+description: 面向 FSX 值班/看护场景的 Bits 流水线看护与飞书播报 Skill。可针对单条或固定五条 FSX 流水线获取最新已结束 run，生成概览、全量 Job、TOP10 失败 Job 等 CSV 产物，并进一步生成每日飞书电子表格与群消息播报。
 ---
 
 # FSX 流水线看护与飞书播报
