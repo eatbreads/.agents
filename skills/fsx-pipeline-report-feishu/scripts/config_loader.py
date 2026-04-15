@@ -20,7 +20,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "1119183026434",
         "865297825538",
     ],
-    "chat_id": "oc_fb9b3bb366d930e54f0471362c3b9e8e",
+    "chat_ids": ["oc_fb9b3bb366d930e54f0471362c3b9e8e"],
     "spreadsheet_title_prefix": "FSX 核心流水线每日看护",
     "sheets_identity": "user",
     "im_identity": "bot",
@@ -59,3 +59,17 @@ def get_viewer_department_ids(config: Dict[str, Any]) -> List[str]:
     if isinstance(value, list):
         return [str(item) for item in value if str(item).strip()]
     return []
+
+
+def get_chat_ids(config: Dict[str, Any]) -> List[str]:
+    value = config.get("chat_ids")
+    if isinstance(value, list):
+        chat_ids = [str(item) for item in value if str(item).strip()]
+        if chat_ids:
+            return chat_ids
+
+    legacy_value = config.get("chat_id")
+    if legacy_value not in (None, ""):
+        return [str(legacy_value)]
+
+    return list(DEFAULT_CONFIG["chat_ids"])

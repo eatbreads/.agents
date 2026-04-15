@@ -23,6 +23,11 @@ daily_watch_publish = load_module("daily_watch_publish", "daily_watch_publish.py
 
 
 class DailyWatchPublishHelpersTest(unittest.TestCase):
+    def test_get_chat_ids_prefers_array_and_compat_legacy_field(self):
+        config = {"chat_ids": ["oc_1", "oc_2"], "chat_id": "oc_legacy"}
+        self.assertEqual(daily_watch_publish.get_chat_ids(config), ["oc_1", "oc_2"])
+        self.assertEqual(daily_watch_publish.get_chat_ids({"chat_id": "oc_legacy"}), ["oc_legacy"])
+
     def test_build_spreadsheet_title_uses_date(self):
         now = datetime(2026, 4, 12, 18, 5)
 
@@ -71,6 +76,39 @@ class DailyWatchPublishHelpersTest(unittest.TestCase):
 
         self.assertIn("报告正文", text)
         self.assertIn("https://base.example", text)
+
+    def test_send_group_messages_continues_after_single_chat_failure(self):
+        with mock.patch.object(
+            daily_watch_publish,
+            "send_group_message",
+            side_effect=[
+                {"message_id": "om_ok"},
+                RuntimeError("send failed"),
+                {"message_id": "om_ok_2"},
+            ],
+        ):
+            results = daily_watch_publish.send_group_messages(
+                ["oc_1", "oc_2", "oc_3"],
+                "hello",
+            )
+
+        self.assertEqual(
+            results,
+            [
+                {"chat_id": "oc_1", "status": "OK", "message_id": "om_ok"},
+                {"chat_id": "oc_2", "status": "ERROR", "error": "send failed"},
+                {"chat_id": "oc_3", "status": "OK", "message_id": "om_ok_2"},
+            ],
+        )
+
+    def test_send_group_messages_raises_when_all_chats_fail(self):
+        with mock.patch.object(
+            daily_watch_publish,
+            "send_group_message",
+            side_effect=RuntimeError("all failed"),
+        ):
+            with self.assertRaises(daily_watch_publish.PublishError):
+                daily_watch_publish.send_group_messages(["oc_1", "oc_2"], "hello")
 
     def test_read_csv_rows_reads_utf8_content(self):
         with tempfile.TemporaryDirectory() as tmpdir:

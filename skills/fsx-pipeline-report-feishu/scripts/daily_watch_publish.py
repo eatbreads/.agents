@@ -18,11 +18,11 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import watch_fixed_pipelines
-from config_loader import get_viewer_department_ids, load_local_config
+from config_loader import get_chat_ids, get_viewer_department_ids, load_local_config
 
 
 CONFIG = load_local_config()
-CHAT_ID = str(CONFIG["chat_id"])
+CHAT_IDS = get_chat_ids(CONFIG)
 SPREADSHEET_TITLE_PREFIX = str(CONFIG["spreadsheet_title_prefix"])
 DEFAULT_OUTPUT_DIR = SCRIPT_DIR
 OVERVIEW_FILENAME = "overview_all.csv"
@@ -379,6 +379,38 @@ def send_group_message(chat_id: str, message: str) -> Dict[str, Any]:
     )
 
 
+def send_group_messages(chat_ids: Sequence[str], message: str) -> List[Dict[str, Any]]:
+    results: List[Dict[str, Any]] = []
+    success_count = 0
+
+    for chat_id in chat_ids:
+        try:
+            payload = send_group_message(chat_id, message)
+        except Exception as exc:
+            results.append(
+                {
+                    "chat_id": chat_id,
+                    "status": "ERROR",
+                    "error": str(exc),
+                }
+            )
+            continue
+
+        success_count += 1
+        results.append(
+            {
+                "chat_id": chat_id,
+                "status": "OK",
+                "message_id": payload.get("message_id"),
+            }
+        )
+
+    if success_count == 0:
+        raise PublishError("Failed to send message to all configured chats.")
+
+    return results
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="执行 FSX 固定五条流水线看护，创建新的飞书电子表格并发群消息。")
     parser.add_argument("--output-dir", default=str(DEFAULT_OUTPUT_DIR), help="CSV 产物输出目录。")
@@ -420,7 +452,7 @@ def main() -> None:
         )
 
     message = compose_final_message(report_text, spreadsheet_ref)
-    send_result = send_group_message(CHAT_ID, message)
+    send_results = send_group_messages(CHAT_IDS, message)
     removed_files = cleanup_local_outputs(output_dir)
 
     print(
@@ -432,7 +464,7 @@ def main() -> None:
                 "permission_results": permission_results,
                 "write_result": write_result.get("data", {}),
                 "removed_files": removed_files,
-                "message_id": send_result.get("message_id"),
+                "send_results": send_results,
             },
             ensure_ascii=False,
             indent=2,

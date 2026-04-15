@@ -10,7 +10,10 @@
     "1119183026434",
     "865297825538"
   ],
-  "chat_id": "oc_fb9b3bb366d930e54f0471362c3b9e8e",
+  "chat_ids": [
+    "oc_fb9b3bb366d930e54f0471362c3b9e8e",
+    "replace-with-another-chat-id"
+  ],
   "viewer_department_ids": [
     "replace-with-open-department-id"
   ],
