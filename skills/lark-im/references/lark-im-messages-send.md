@@ -18,7 +18,7 @@ Messages sent by this tool are visible to other people. Before calling it, you *
 
 When using `--as bot`, the message is sent in the app's name, so make sure the app has already been added to the target chat.
 
-When using `--as user`, the message is sent as the authorized end user and requires the `im:message.send_as_user` scope.
+When using `--as user`, the message is sent as the authorized end user and requires the `im:message.send_as_user` and `im:message` scopes.
 
 ## Choose The Right Content Flag
 
@@ -211,13 +211,13 @@ lark-cli im +messages-send --chat-id oc_xxx --markdown $'## Test\n\nhello' --dry
 - `--chat-id` and `--user-id` are mutually exclusive; you must provide exactly one
 - `--content` must be valid JSON
 - When using `--content`, you are responsible for making the JSON structure match the effective `msg_type`
-- `--image`/`--file`/`--video`/`--audio` support local file paths; the shortcut uploads first and then sends the message; file/image upload is bot-only, so when using `--as user`, the upload step is automatically performed with bot identity, and only the final send uses user identity
+- `--image`/`--file`/`--video`/`--audio` support local file paths; the shortcut uploads first and then sends the message; both the upload and send steps use the same identity (UAT when `--as user`, TAT when `--as bot`)
 - If the provided media value starts with `img_` or `file_`, it is treated as an existing key and used directly
 - `--markdown` always sends `msg_type=post`, even if you do not explicitly set `--msg-type post`
 - If you explicitly set `--msg-type` and it conflicts with the chosen content flag, validation fails
 - When using `--video`, `--video-cover` is required as the video cover
 - `--dry-run` uses placeholder image keys for remote Markdown images and placeholder media keys for local uploads
 - Failures return an error code and message
-- `--as user` uses a user access token (UAT) and requires the `im:message.send_as_user` scope; the message is sent as the authorized end user
+- `--as user` uses a user access token (UAT) and requires the `im:message.send_as_user` and `im:message` scopes; the message is sent as the authorized end user
 - `--as bot` uses a tenant access token (TAT) and requires the `im:message:send_as_bot` scope
 - When sending as a bot, the app must already be in the target group or already have a direct-message relationship with the target user

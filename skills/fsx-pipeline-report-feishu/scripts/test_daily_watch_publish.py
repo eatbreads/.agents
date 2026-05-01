@@ -77,12 +77,76 @@ class DailyWatchPublishHelpersTest(unittest.TestCase):
         self.assertIn("报告正文", text)
         self.assertIn("https://base.example", text)
 
+    def test_build_daily_watch_card_contains_oncall_links_and_top10(self):
+        overview_rows = [
+            {
+                "pipeline_name": "FSx统一客户端_北京_全量流水线_vepfs/tos",
+                "总用例数": "686",
+                "总失败": "48",
+                "总成功": "635",
+                "总跳过": "3",
+                "总通过率": "92.57",
+                "pipeline_id": "1073215225602",
+            },
+            {
+                "pipeline_name": "FSProxy_FileNAS_全量_流水线",
+                "总用例数": "0",
+                "总失败": "0",
+                "总成功": "0",
+                "总跳过": "0",
+                "总通过率": "0.00",
+                "pipeline_id": "865297825538",
+            },
+        ]
+        top10_rows = [
+            {
+                "pipeline_name": "FSx统一客户端_北京_全量流水线_vepfs/tos",
+                "jobName": "升级兼容性测试",
+                "state": "failed",
+                "failed_case": "14",
+                "pipeline_id": "1073215225602",
+            }
+        ]
+        oncall = {
+            "open_ids": ["ou_primary", "ou_backup"],
+        }
+
+        card = daily_watch_publish.build_daily_watch_card(
+            overview_rows,
+            top10_rows,
+            oncall,
+            datetime(2026, 4, 27, 9, 0),
+        )
+
+        text = str(card)
+        self.assertEqual(card["schema"], "2.0")
+        self.assertIn("person_list", text)
+        self.assertIn("ou_primary", text)
+        self.assertIn("collapsible_panel", text)
+        self.assertIn("TOP10", text)
+        self.assertIn("升级兼容性测试", text)
+        self.assertIn("https://bits.bytedance.net/devops/4082708738/pipeline/detail/1073215225602", text)
+
+    def test_send_group_card_uses_interactive_message(self):
+        with mock.patch.object(
+            daily_watch_publish,
+            "_run_command",
+            return_value={"message_id": "om_card"},
+        ) as run_command:
+            payload = daily_watch_publish.send_group_card("oc_1", {"schema": "2.0"})
+
+        self.assertEqual(payload, {"message_id": "om_card"})
+        args = run_command.call_args.args[0]
+        self.assertIn("--msg-type", args)
+        self.assertEqual(args[args.index("--msg-type") + 1], "interactive")
+        self.assertEqual(args[args.index("--chat-id") + 1], "oc_1")
+
     def test_send_group_messages_continues_after_single_chat_failure(self):
         with mock.patch.object(
             daily_watch_publish,
             "send_group_message",
             side_effect=[
-                {"message_id": "om_ok"},
+                {"data": {"message_id": "om_ok"}},
                 RuntimeError("send failed"),
                 {"message_id": "om_ok_2"},
             ],

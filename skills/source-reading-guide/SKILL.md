@@ -1,6 +1,6 @@
 ---
 name: source-reading-guide
-description: Analyze source code as a step-by-step source reading navigation map instead of a high-level summary. Use when Codex needs to help users read large codebases, follow execution flow into real functions, produce function-level sequence diagrams, avoid skipping bridge or dispatch layers, map analysis back to IDE-friendly reading order, or explain confirmed vs unconfirmed call chains during code reading.
+description: Analyze source code as a step-by-step source reading navigation map instead of a high-level summary. Use when Codex needs to help users read large codebases, follow execution flow into real functions, produce function-level sequence diagrams, avoid skipping bridge or dispatch layers, and map analysis back to IDE-friendly reading order.
 ---
 
 # Source Reading Guide
@@ -12,117 +12,90 @@ description: Analyze source code as a step-by-step source reading navigation map
 
 ## Core Goal
 
-默认把输出做成“源码阅读导航图”。
-优先回答这几件事：
+默认把输出做成“源码阅读导航图”，并满足以下目标：
 
-- 这段代码在整个系统里处于哪一层
-- 建议从哪个函数开始读
-- 应该按什么顺序继续点进去
-- 哪些函数虽然简单，但属于阅读路标，不能随便跳过
+- 先给目录结构总览，明确每个目录的职责
+- 提供多条“源码阅读型详细顺序图”（覆盖主要执行分支）
+- 顺序图里的函数名、类名必须与源码真实一致
+- 调用链尽量不断层，保证可以对着图一步步点进代码
+- 提供一个更完整、更大的静态类图/模块图，并标注关键交互
+- 强制把结果写入本地 `.md` 文件，而不是只在对话里输出
 
 ## Working Rules
 
-### 1. 先建立阅读定位
+### 1. 目录结构总览必须放在最前面
 
-在任何图之前，先用一小段话说明：
+输出开头必须先给目录结构总览，格式类似：
 
-- 这段代码或模块在系统里的位置
-- 这次阅读建议从哪里开始
-- 推荐按什么顺序跟进去
-- 哪些函数是“路径路标”
-
-语气要像在带人读源码，明确说“先看哪个，再看哪个”。
-不要一上来就只给抽象架构图。
-
-### 2. 输出三层执行流
-
-必须同时输出下面三层，而不是只给一个高层图。
-
-#### 第 1 层：高层总览顺序图
-
-目标：
-
-- 先让用户知道总体链路
-- 只保留主要阶段
+- `目录A`：一句话职责说明。
+- `目录B`：一句话职责说明。
+- `目录B/子目录`：一句话职责说明。
 
 要求：
 
-- 包含入口、核心分发、后端处理、返回路径
-- 可以适度简洁，但不能只剩模块名
-- 每条调用旁边都写简短中文解释
+- 覆盖当前阅读范围内的重要目录（入口、核心执行、调度、后端、协议、工具）
+- 描述以“职责”而不是“文件名罗列”为主
+- 顺序应支持用户自顶向下建立整体心智模型
 
-#### 第 2 层：源码阅读型详细顺序图
+### 2. 只输出“源码阅读型详细顺序图”，并且要有多条
 
-这是最重要的一层，默认投入最多篇幅。
+不要输出“高层总览顺序图”。
 
-目标：
+必须输出多条详细顺序图，至少覆盖：
 
-- 让用户可以对照源码一步步往下读
-- 尽量少跳函数
-- 保留中间桥接、转发、封装、分发、调度函数
+- 初始化/启动流程
+- 主请求处理流程
+- 至少 1 条分支流程（如控制命令、异步回调、重试、恢复、监控命令、worker loop 等）
 
-要求：
+如果代码本身存在更多核心分支，应继续补充，而不是只给 1 条主链。
 
-- 必须按真实阅读顺序展开
-- 不要因为函数逻辑简单就省略
-- 对下面这些函数默认不要跳过：
+### 3. 每条顺序图都要“可跟读”
+
+顺序图必须满足：
+
+- 使用真实函数名、真实类名（与代码一致）
+- 每一步调用都有中文解释，解释其在当前链路中的作用
+- 保留关键桥接函数：
   - 入口函数
   - `dispatch` / `handle` / `process` / `route`
   - `enqueue` / `submit` / `schedule`
   - `callback` / `completion`
   - `prepare` / `init` / `open` / `create context`
   - `wrapper` / `adapter` / `bridge`
-- 每一步调用都写中文解释，格式尽量接近：
-  - `Foo -> Bar: doRead() 【把用户请求转成内部读任务】`
+- 不能用“模块A调用模块B”替代真实函数级调用
+- 代码流转不能跳太大；允许少量折叠，但不能让主路径断层
 
-如果确实跳过了一些中间函数，必须单独说明：
+### 4. 不要“省略函数说明”章节
 
-- 省略了哪些函数
-- 为什么可以省略
-- 跳过后为什么不影响阅读主线
+不再输出“省略函数说明”或“其他请求示例”章节。
 
-#### 第 3 层：重点节点下钻顺序图
+要求是：
 
-目标：
+- 直接把关键分支展开成完整顺序图
+- 通过多图覆盖复杂度，而不是通过“省略说明”减少信息
 
-- 对详细图里最容易迷路的 1 到 3 个节点继续往下拆
-- 帮用户看清内部子调用链
+### 5. 顺序图使用 PlainUML 风格
 
-要求：
+所有顺序图遵守：
 
-- 优先选复杂节点、调度节点、状态切换节点、异步回调节点
-- 展开它内部的子调用链
-- 标清哪些函数真正做事，哪些只是转发
+- 图里必须写函数名/类名
+- 每条调用后面加中文注释
+- 有返回值、错误分支、重试、异步回调时要显式画出
+- 对易迷路节点可用 `note` 标注“建议停下读源码”的位置
 
-### 3. 顺序图必须使用 PlainUML 风格
+### 6. 提供更完整的静态结构图（增强版）
 
-所有顺序图都遵守这些规则：
+除顺序图外，必须输出一个更完整的类图/模块图：
 
-- 图里必须写函数名，不能只写模块名
-- 每条调用旁边都写中文短注释
-- 如果函数名很泛，比如 `process`、`handle`、`run`，注释里必须写清它实际处理什么
-- 如果链路里有返回值、错误、重试、异步回调，要在图里体现
-- 对很长的链路，可以用 `note` 提醒“建议在这里停下来先读源码”
+- 关键类/模块尽量完整，不要只列少数方法
+- 类中优先列阅读主线相关函数
+- 标出依赖、调用方向、组合关系
+- 除结构连线外，增加关键交互标注（例如：`Srv -> Net: StartNetThread()【启动网络线程并注册RPC服务】`）
+- 标注层次：入口层、调度层、执行层、状态/恢复层
 
-### 4. 还要给静态结构图
+### 7. 分层关键函数表仍需保留
 
-除顺序图外，再输出一个类图或模块图。
-
-要求：
-
-- 标出主要类、模块、组件
-- 类里尽量写较多关键函数，不要只列 2 到 3 个
-- 优先展示阅读主线相关的函数
-- 标出依赖、组合、调用方向
-- 用注释标明：
-  - 哪些类更偏入口层
-  - 哪些类更偏调度层
-  - 哪些类更偏后端执行层
-  - 哪些类更偏恢复或状态管理层
-
-### 5. 关键函数表必须分层整理
-
-不要只列少量函数，至少按下面几类整理：
+函数表至少分层覆盖：
 
 - 入口函数
 - 路由/分发函数
@@ -131,57 +104,44 @@ description: Analyze source code as a step-by-step source reading navigation map
 - 状态更新/副作用函数
 - 错误处理/恢复函数
 
-表格必须包含以下字段：
+表格字段保持：
 
 | 函数名 | 所属类/模块 | 在阅读路径中的位置 | 主要行为 | 为什么这一步不能跳过 | 输入 | 输出 | 副作用 | 阻塞/异步 | 下一步应该看什么 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 
-其中这两列必须认真写：
+### 8. 术语解释与阅读建议保持贴链路
 
-- `为什么这一步不能跳过`
-- `下一步应该看什么`
+- 术语解释必须结合当前调用链，不写百科式定义
+- 阅读建议必须给出“按函数可点击”的实际阅读顺序
 
-表格的目的不是罗列 API，而是让用户能顺着一路读下去。
+### 9. 强制写入 Markdown 文件
 
-### 6. 术语解释要贴着当前链路写
+每次使用本 skill 完成分析后，必须把完整结果写入本地 `.md` 文件。
 
-如果出现项目术语或系统术语，用下面格式解释：
+强制要求：
 
-- 注：xxx 是什么：一句人话解释
-- 注：xxx 在这里的作用：它在当前调用链里负责什么
-
-不要只给百科式定义，必须解释它在当前链路里干嘛。
-
-### 7. 最后给可落地的阅读建议
-
-收尾时必须给出源码阅读建议，至少包括：
-
-- 推荐阅读顺序（函数级）
-- 第一遍重点看什么
-- 第二遍补哪些边角逻辑
-- 哪些函数第一次可以只扫一眼
-- 哪些函数必须停下来精读
+- 不能只在对话里输出，必须落盘
+- 默认输出路径优先：`docs/source-reading-guide-<scope>.md`
+- 若 `docs/` 不存在，则写到仓库根目录：`source-reading-guide-<scope>.md`
+- `<scope>` 使用被分析目录名或模块名（例如 `src`、`fusedaemon`）
+- 回答中必须明确告知写入文件的绝对路径
 
 ## Output Structure
 
-默认按下面结构输出，除非用户明确要求别的格式：
+默认按下面结构输出（除非用户明确要求其他格式）：
 
 ```markdown
-## 阅读定位
+## 目录结构总览
 
-## 已确认链路
+## 源码阅读型详细顺序图 - 启动流程
 
-## 待确认链路
+## 源码阅读型详细顺序图 - 主请求流程
 
-## 第 1 层：高层总览顺序图
+## 源码阅读型详细顺序图 - 分支流程 A
 
-## 第 2 层：源码阅读型详细顺序图
+## 源码阅读型详细顺序图 - 分支流程 B（如果有）
 
-## 省略函数说明
-
-## 第 3 层：重点节点下钻顺序图
-
-## 静态结构图
+## 静态结构图（增强）
 
 ## 分层关键函数表
 
@@ -190,11 +150,18 @@ description: Analyze source code as a step-by-step source reading navigation map
 ## 源码阅读建议
 ```
 
-如果当前链路已经足够确定，可以弱化“待确认链路”；如果信息不足，就必须保留“已确认链路”和“待确认链路”的区分。
+注意：
+
+- 不要输出 `阅读定位`
+- 不要输出 `已确认链路`
+- 不要输出 `待确认链路`
+- 不要输出 `第 1 层：高层总览顺序图`
+- 不要输出 `省略函数说明`
+- 不要输出“其他请求示例”占位段落
 
 ## PlainUML Template
 
-顺序图和结构图尽量使用下面这种 PlainUML 风格，注释保持中文：
+### 详细顺序图模板
 
 ```text
 @startuml
@@ -202,77 +169,85 @@ actor Caller
 participant Entry
 participant Dispatcher
 participant Worker
+participant Callback
 
-Caller -> Entry: read() 【进入入口函数】
-Entry -> Dispatcher: dispatchRead() 【把请求交给分发层】
-Dispatcher -> Worker: submitTask() 【提交到底层执行单元】
-Worker --> Dispatcher: result 【返回处理结果】
-Dispatcher --> Entry: status 【汇总执行状态】
-Entry --> Caller: response 【返回给上层调用者】
+Caller -> Entry: start() 【进入真实入口函数】
+Entry -> Dispatcher: dispatchRequest() 【进入分发桥接层】
+Dispatcher -> Worker: submitTask() 【提交到执行单元】
+Worker -> Callback: onComplete() 【触发回调/收口】
+Callback --> Dispatcher: result/status 【回传执行结果】
+Dispatcher --> Entry: response/status 【汇总状态并返回】
+Entry --> Caller: done 【返回调用方】
 
 note right of Dispatcher
-建议在这里停下来先读源码，
-先确认它如何选择后续分支。
+建议在这里停下来先读源码：
+先确认分支选择条件，再继续往下点。
 end note
 @enduml
 ```
 
-### 静态结构图模板
+### 增强静态结构图模板
 
 ```text
 @startuml
 class EntryLayer {
-  +open()
-  +read()
+  +main()
+  +init()
   +handleRequest()
 }
 
 class DispatchLayer {
   +dispatch()
   +route()
+  +enqueue()
   +schedule()
 }
 
-class BackendLayer {
+class WorkerLayer {
+  +process()
   +execute()
   +complete()
+}
+
+class StateLayer {
   +updateState()
+  +recover()
+  +onError()
 }
 
 EntryLayer --> DispatchLayer
-DispatchLayer --> BackendLayer
+DispatchLayer --> WorkerLayer
+WorkerLayer --> StateLayer
 
 note top of EntryLayer : 入口层
 note top of DispatchLayer : 调度层
-note top of BackendLayer : 后端执行层
+note top of WorkerLayer : 执行层
+note top of StateLayer : 状态/恢复层
+
+note bottom
+关键交互示例：
+Srv -> Net: StartNetThread()【启动网络线程并注册RPC服务】
+Dispatcher -> Worker: submitTask()【提交执行任务】
+@end note
 @enduml
 ```
-
-## Confirmed vs Unconfirmed
-
-如果无法确认完整调用链：
-
-- 不要编造缺失函数
-- 明确写“这里是推测，需要继续点进源码确认”
-- 把“已确认链路”和“待确认链路”分开
-- 在图外补一句“下一步该点哪几个函数来确认”
 
 ## Style Rules
 
 - 目标是帮人读源码，不是做 PPT 汇报
-- 不要只讲抽象架构
-- 不要把图画得过短
-- 宁可适当长一点，也不要让调用链断层
-- 所有说明都贴近“打开 IDE 一步步跟代码”的场景
-- 语气自然，像有经验的工程师在带读源码
+- 优先函数级调用链，不停留在模块名层面
+- 顺序图宁可长一点，也不要断主线
+- 输出要让用户可以“照图点代码”
+- 语气自然，像有经验工程师带读源码
 
 ## Hard Bans
 
-避免下面这些常见问题：
+避免下面问题：
 
 - 只给模块级架构，不给函数级入口
-- 顺序图里跳过关键桥接函数
-- 用“某模块调用某模块”替代真实函数名
-- 对泛函数名不给上下文解释
+- 顺序图跳过关键桥接/分发/回调函数
+- 函数名或类名与源码不一致
+- 用“某模块调用某模块”替代真实函数调用
 - 把推测写成已确认事实
-- 只给结论，不告诉用户下一步点哪里
+- 给结论但不告诉用户下一步点哪个函数
+- 只在对话输出而不写入 `.md` 文件

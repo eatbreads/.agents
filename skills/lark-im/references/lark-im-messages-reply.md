@@ -18,7 +18,7 @@ Replies sent by this tool are visible to other people. Before calling it, you **
 
 When using `--as bot`, the reply is sent in the app's name, so make sure the app has already been added to the target chat.
 
-When using `--as user`, the reply is sent as the authorized end user and requires the `im:message.send_as_user` scope.
+When using `--as user`, the reply is sent as the authorized end user and requires the `im:message.send_as_user` and `im:message` scopes.
 
 ## Choose The Right Content Flag
 
@@ -211,12 +211,12 @@ The reply appears in the target message's thread and does not show up in the mai
 - When using `--content`, you are responsible for making the JSON structure match the effective `msg_type`
 - `--reply-in-thread` adds `reply_in_thread=true` to the API request
 - `--reply-in-thread` is mainly meaningful in chats that support thread replies
-- `--image`/`--file`/`--video`/`--audio`/`--video-cover` support local file paths; the shortcut uploads first and then sends the reply; file/image upload is bot-only, so when using `--as user`, the upload step is automatically performed with bot identity, and only the final send uses user identity
+- `--image`/`--file`/`--video`/`--audio`/`--video-cover` support local file paths; the shortcut uploads first and then sends the reply; both the upload and send steps use the same identity (UAT when `--as user`, TAT when `--as bot`)
 - If the provided media value starts with `img_` or `file_`, it is treated as an existing key and used directly
 - `--markdown` always sends `msg_type=post`
 - If you explicitly set `--msg-type` and it conflicts with the chosen content flag, validation fails
 - When using `--video`, `--video-cover` is required as the video cover
 - `--dry-run` uses placeholder image keys for remote Markdown images and placeholder media keys for local uploads
 - Failures return error codes and messages
-- `--as user` uses a user access token (UAT) and requires the `im:message.send_as_user` scope; the reply is sent as the authorized end user
+- `--as user` uses a user access token (UAT) and requires the `im:message.send_as_user` and `im:message` scopes; the reply is sent as the authorized end user
 - `--as bot` uses a tenant access token (TAT), and requires the `im:message:send_as_bot` scope

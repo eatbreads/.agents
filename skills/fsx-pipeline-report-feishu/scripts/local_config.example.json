@@ -17,6 +17,8 @@
   "viewer_department_ids": [
     "replace-with-open-department-id"
   ],
+  "duty_name": "fuse-tob-oncall",
+  "duty_mentions_script": "fetch_duty_oncall_mentions.py",
   "spreadsheet_title_prefix": "FSX 核心流水线每日看护",
   "sheets_identity": "user",
   "im_identity": "bot"

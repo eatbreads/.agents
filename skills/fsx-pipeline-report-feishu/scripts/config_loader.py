@@ -25,6 +25,8 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "sheets_identity": "user",
     "im_identity": "bot",
     "viewer_department_ids": [],
+    "duty_name": "fuse-tob-oncall",
+    "duty_mentions_script": "fetch_duty_oncall_mentions.py",
 }
 
 
